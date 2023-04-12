@@ -31,7 +31,7 @@
 #include <string.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
-#define MAX_DEPTH 8; //Got 8 from the Stanford website about pintOS
+#define MAX_DEPTH 8 //Got 8 from the Stanford website about pintOS
 bool sema_cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED);
 bool donate_cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED);
 void priority_donate(void);
@@ -282,9 +282,10 @@ lock_release (struct lock *lock)
 void
 donatelist_removal(struct lock *curr_lock){
   struct thread *curr_thread = thread_current();
+  struct list_elem *element;
 
   if(!list_empty(&curr_thread -> donates)){
-    struct list_elem *element = list_begin(&curr_thread -> donates);
+    element = list_begin(&curr_thread -> donates);
   }
 
   while(element != list_end(&curr_thread -> donates)){
@@ -301,11 +302,12 @@ donatelist_removal(struct lock *curr_lock){
 void 
 priority_restore(void){
   struct thread *curr_thread = thread_current();
+  struct thread *temp_thread;
   curr_thread -> priority = curr_thread -> start_priority;
 
   if(!list_empty(&curr_thread -> donates)){
     list_sort(&curr_thread -> donates, donate_cmp_priority, NULL);
-    struct thread *temp_thread = list_entry(list_front(&curr_thread -> donates, struct thread, 
+    temp_thread = list_entry(list_front(&curr_thread -> donates, struct thread, 
                       donate_elem));
     if(temp_thread -> priority > curr_thread -> priority){
       curr_thread -> priority = temp_thread -> priority;
