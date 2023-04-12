@@ -307,8 +307,8 @@ priority_restore(void){
 
   if(!list_empty(&curr_thread -> donates)){
     list_sort(&curr_thread -> donates, donate_cmp_priority, NULL);
-    temp_thread = list_entry(list_front(&curr_thread -> donates, struct thread, 
-                      donate_elem));
+    temp_thread = list_entry(list_front(&curr_thread -> donates), struct thread, 
+                      donate_elem);
     if(temp_thread -> priority > curr_thread -> priority){
       curr_thread -> priority = temp_thread -> priority;
     }
