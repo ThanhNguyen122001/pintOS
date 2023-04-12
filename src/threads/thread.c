@@ -240,7 +240,6 @@ thread_sleep(int64_t wakeup_ticks){
   enum intr_level prev_level;
 
   prev_level = intr_disable();
-  ASSERT(curr_thread != idle_disable());
 
   curr_thread -> wakeup_tick = wakeup_ticks;
   list_push_back(&sleep_list, &curr_thread -> elem);
