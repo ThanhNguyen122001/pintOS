@@ -281,21 +281,17 @@ lock_release (struct lock *lock)
 /* Remove the thread of the donation list. */
 void
 donatelist_removal(struct lock *curr_lock){
-  struct thread *curr_thread = thread_current();
   struct list_elem *element;
+  struct thread *curr_thread = thread_current();
 
-  if(!list_empty(&curr_thread -> donates)){
-    element = list_begin(&curr_thread -> donates);
-  }
-
-  while(element != list_end(&curr_thread -> donates)){
-    struct thread *temp_thread = list_entry(element, struct thread, donate_elem);
-    if(temp_thread -> lock_wait == curr_lock){
-      list_remove(&temp_thread -> donate_elem);
-    }else{
-      element = list_next(element);
-    }
-  }
+  for(element = list_begin(&curr_thread -> donates); 
+        element != list_end(&curr_thread -> donates); 
+            element = list_next(element)){
+              struct thread *temp_thread = list_entry(element, struct thread, donate_elem);
+              if(temp_thread -> lock_wait == curr_lock){
+                list_remove(&temp_thread -> donate_elem);
+              }
+        }
 }
 
 /* This will restore the locked thread's priority back to its orginial state*/
