@@ -407,6 +407,7 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  priority_restore();
   priority_cmp_test();
 }
 
@@ -527,11 +528,15 @@ init_thread (struct thread *t, const char *name, int priority)
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
 
+  list_init(&t -> donates);
+
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
+  t->start_priority = priority;
+  t->lock_wait = NULL; //Could be an error here
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
 }

@@ -90,9 +90,15 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
     int64_t wakeup_tick;                /* Wake up the thread from sleep. */
+    int start_priority;                 /* starting priority to be transfer 
+                                           back after a donation */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
+    struct list donates;                /* List of Donations*/
+    struct list_elem donate_elem;       /* Each element inside list of donations*/
+
+    struct lock lock_wait;              /* Able to lock a thread and make it wait until unlock*/
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */

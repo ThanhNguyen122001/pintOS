@@ -25,6 +25,10 @@ struct lock
   };
 
 void lock_init (struct lock *);
+bool donate_cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux);
+void priority_donate(void);
+void donatelist_removal(struct lock *curr_lock);
+void priority_restore(void);
 void lock_acquire (struct lock *);
 bool lock_try_acquire (struct lock *);
 void lock_release (struct lock *);
