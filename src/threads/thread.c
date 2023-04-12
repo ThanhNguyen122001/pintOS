@@ -151,6 +151,29 @@ thread_print_stats (void)
           idle_ticks, kernel_ticks, user_ticks);
 }
 
+/* This will compare the priority of the thread in order to 
+   put in the list that is in order from high priority to low
+   priority. */
+bool
+cmp_priority(struct list_elem *x, struct list_elem *y, void *aux UNUSED){
+  struct thread *t_one = list_entry(x, struct thread, elem);
+  struct thread *t_two = list_entry(y, struct thread, elem);
+
+  return t_one -> priority > t_two -> priority;
+}
+
+/* This will test to make sure that the first thread from the ready list 
+   actually has higher priority than the current thread. */
+void
+priority_cmp_test(void){
+  struct thread *curr_thread = thread_current();
+  struct thread *list_thread = list_entry(list_front(&ready_list), struct thread, elem);
+
+  if((!list_empty(&ready_list)) && (curr_thread -> priority < list_thread -> priority)){
+    thread_yield();
+  }
+}
+
 /* Creates a new kernel thread named NAME with the given initial
    PRIORITY, which executes FUNCTION passing AUX as the argument,
    and adds it to the ready queue.  Returns the thread identifier
@@ -212,7 +235,7 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-
+  priority_cmp_test();
   return tid;
 }
 
@@ -265,7 +288,7 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t -> elem, cmp_priority, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -352,7 +375,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+    list_insert_ordered(&ready_list, &cur -> elem, cmp_priority, NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -380,6 +403,7 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  priority_cmp_test();
 }
 
 /* Returns the current thread's priority. */

@@ -114,6 +114,9 @@ void thread_start (void);
 void thread_tick (void);
 void thread_print_stats (void);
 
+bool cmp_priority(struct list_elem *x, struct list_elem *y, void *aux);
+void priority_cmp_test(void);
+
 typedef void thread_func (void *aux);
 tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
