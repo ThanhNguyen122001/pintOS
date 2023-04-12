@@ -167,7 +167,11 @@ cmp_priority(struct list_elem *x, struct list_elem *y, void *aux UNUSED){
 void
 priority_cmp_test(void){
   struct thread *curr_thread = thread_current();
-  struct thread *list_thread = list_entry(list_front(&ready_list), struct thread, elem);
+  struct thread *list_thread;
+
+  if(!list_empty(&ready_list)){
+    list_thread = list_entry(list_front(&ready_list), struct thread, elem);
+  }
 
   if((!list_empty(&ready_list)) && (curr_thread -> priority < list_thread -> priority)){
     thread_yield();
