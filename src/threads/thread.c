@@ -28,6 +28,9 @@ static struct list ready_list;
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
 
+/* List of all processes that are sleeping. */
+static struct list sleep_list;
+
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -92,7 +95,8 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-
+  list_init (&sleep_list);
+  
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
@@ -228,6 +232,23 @@ thread_block (void)
   schedule ();
 }
 
+/* Add the current thread to the sleep list and also save the wakeup 
+   for the current thread. */
+void
+thread_sleep(int64_t wakeup_ticks){
+  struct thread *curr_thread = thread_current();
+  enum intr_level prev_level;
+
+  prev_level = intr_disable();
+  ASSERT(curr_thread != idle_disable());
+
+  curr_thread -> wakeup_tick = wakeup_ticks;
+  list_push_back(&sleep_list, &curr_thread -> elem);
+  
+  thread_block();
+  intr_set_level(prev_level);
+}
+
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -248,6 +269,22 @@ thread_unblock (struct thread *t)
   list_push_back (&ready_list, &t->elem);
   t->status = THREAD_READY;
   intr_set_level (old_level);
+}
+
+/* Remove any sleep thread from the sleep_list that needs to 
+   wake up and put it in the ready_list */
+void
+thread_wakeup(int64_t wakeup_ticks){
+  struct list_elem *element = list_begin(&sleep_list);
+  while(element != list_end(&sleep_list)){
+    struct thread *curr_thread = list_entry(element, struct thread, elem);
+    if(curr_thread -> wakeup_tick <= wakeup_ticks){
+      element = list_remove(element);
+      thread_unblock(curr_thread);
+    }else{
+      element = list_next(element);
+    }
+  }
 }
 
 /* Returns the name of the running thread. */
