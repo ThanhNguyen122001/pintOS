@@ -266,6 +266,22 @@ cond_init (struct condition *cond)
   list_init (&cond->waiters);
 }
 
+/* Compares the priority of the semaphore_elements after changing it
+   from semaphore list to a thread to be able to compare the priority. */
+bool 
+sema_cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED){
+  struct semaphore_elem *x_sema = list_entry(x, struct semaphore_elem, elem);
+  struct semaphore_elem *y_sema = list_entry(y, struct semaphore_elem, elem);
+
+  struct list *x_waiter = &(x_sema -> semaphore.waiters);
+  struct list *y_waiter = &(y_sema -> semaphore.waiters);
+
+  struct thread *x_thread = list_entry(list_begin(x_waiter), struct thread, elem);
+  struct thread *y_thread = list_entry(list_begin(y_waiter), struct thread, elem);
+
+  return x_thread -> priority > y_thread -> priority;
+}
+
 /* Atomically releases LOCK and waits for COND to be signaled by
    some other piece of code.  After COND is signaled, LOCK is
    reacquired before returning.  LOCK must be held before calling
@@ -338,18 +354,4 @@ cond_broadcast (struct condition *cond, struct lock *lock)
 
   while (!list_empty (&cond->waiters))
     cond_signal (cond, lock);
-}
-
-bool 
-sema_cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED){
-  struct semaphore_elem *x_sema = list_entry(x, struct semaphore_elem, elem);
-  struct semaphore_elem *y_sema = list_entry(y, struct semaphore_elem, elem);
-
-  struct list *x_waiter = &(x_sema -> semaphore.waiters);
-  struct list *y_waiter = &(y_sema -> semaphore.waiters);
-
-  struct thread *x_thread = list_entry(list_begin(x_waiter), struct thread, elem);
-  struct thread *y_thread = list_entry(list_begin(y_waiter), struct thread, elem);
-
-  return x_thread -> priority > y_thread -> priority;
 }
